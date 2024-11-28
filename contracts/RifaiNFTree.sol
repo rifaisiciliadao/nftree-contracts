@@ -21,6 +21,7 @@ contract RifaiNFTree is ERC721, AccessControl, ReentrancyGuard {
         uint256 contributeAmount;
         uint256 rifaiDaoFee;
     }
+
     // State
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
     bytes32 public constant VALIDATOR_ROLE = keccak256("VALIDATOR_ROLE");
@@ -32,6 +33,7 @@ contract RifaiNFTree is ERC721, AccessControl, ReentrancyGuard {
     mapping(uint256 => uint256) public treeIdToCampaignId;
     mapping(uint256 => uint256[]) public campaignTreeIds;
     mapping(uint256 => string) public extendedTreeMetadata;
+
     // Events
     event TreeAdopted(uint256 indexed campaignId, address indexed adopter);
     event CampaignSet(
