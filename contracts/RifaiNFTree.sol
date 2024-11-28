@@ -19,12 +19,14 @@ contract RifaiNFTree is ERC721, AccessControl, ReentrancyGuard {
         address beneficiary;
         address contributeToken;
         uint256 contributeAmount;
+        uint256 rifaiDaoFee;
     }
     // State
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
     bytes32 public constant VALIDATOR_ROLE = keccak256("VALIDATOR_ROLE");
     uint256 private _nextTokenId;
     string private _customBaseURI;
+    address public rifaiDaoBeneficiary;
     mapping(uint256 => PlantingCampaign) public plantingCampaigns;
     mapping(uint256 => mapping(address => bool)) public campaignAdopters;
     mapping(uint256 => uint256) public treeIdToCampaignId;
@@ -40,7 +42,8 @@ contract RifaiNFTree is ERC721, AccessControl, ReentrancyGuard {
         uint256 totalTrees,
         address beneficiary,
         address contributeToken,
-        uint256 contributeAmount
+        uint256 contributeAmount,
+        uint256 rifaiDaoFee
     );
     event TreeMetadataSet(uint256 indexed tokenId, string metadata);
 
@@ -72,12 +75,19 @@ contract RifaiNFTree is ERC721, AccessControl, ReentrancyGuard {
         address beneficiary,
         address contributeToken,
         uint256 contributeAmount,
+        uint256 rifaiDaoFee,
         string memory campaignMetadata
     ) public onlyRole(DEFAULT_ADMIN_ROLE) {
+        // Check if the campaign has not started or has already ended
         require(
             plantingCampaigns[campaignId].startDate > block.timestamp &&
                 plantingCampaigns[campaignId].endDate < block.timestamp,
             "Campaign already started or ended."
+        );
+        // Check if the rifai dao fee is less than a third of the contribute amount
+        require(
+            rifaiDaoFee < contributeAmount / 3,
+            "Rifai DAO fee is too high."
         );
         // Check if provided payment token is valid
         if (contributeToken != address(0) && contributeAmount > 0) {
@@ -95,7 +105,8 @@ contract RifaiNFTree is ERC721, AccessControl, ReentrancyGuard {
             0,
             beneficiary,
             contributeToken,
-            contributeAmount
+            contributeAmount,
+            rifaiDaoFee
         );
         emit CampaignSet(
             campaignId,
@@ -105,7 +116,8 @@ contract RifaiNFTree is ERC721, AccessControl, ReentrancyGuard {
             totalTrees,
             beneficiary,
             contributeToken,
-            contributeAmount
+            contributeAmount,
+            rifaiDaoFee
         );
     }
 
@@ -138,11 +150,24 @@ contract RifaiNFTree is ERC721, AccessControl, ReentrancyGuard {
                 "Insufficient balance."
             );
             // Request the payment from the sender
+            uint256 amountToBeneficiary = plantingCampaigns[campaignId]
+                .contributeAmount - plantingCampaigns[campaignId].rifaiDaoFee;
+            uint256 amountToRifaiDao = plantingCampaigns[campaignId]
+                .rifaiDaoFee;
             IERC20(plantingCampaigns[campaignId].contributeToken).transferFrom(
                 msg.sender,
                 plantingCampaigns[campaignId].beneficiary,
-                plantingCampaigns[campaignId].contributeAmount
+                amountToBeneficiary
             );
+            // Transfer the rifai dao fee to the rifai dao
+            if (amountToRifaiDao > 0) {
+                IERC20(plantingCampaigns[campaignId].contributeToken)
+                    .transferFrom(
+                        msg.sender,
+                        rifaiDaoBeneficiary,
+                        amountToRifaiDao
+                    );
+            }
         }
         // Mint the NFT
         uint256 tokenId = _nextTokenId++;
