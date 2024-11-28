@@ -1,0 +1,11 @@
+{
+    "network": "localhost",
+    "contract_name": "RifaiNFTree",
+    "contract_address": "",
+    "owner_mnemonic": "",
+    "provider": "http://0.0.0.0:8545",
+    "owner_key": "",
+    "owner_address": "",
+    "default_admin": "",
+    "minter": ""
+}

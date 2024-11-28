@@ -1,0 +1,30 @@
+{
+  "name": "hardhat-boilerplate",
+  "version": "1.0.0",
+  "description": "Hardhat boilerplate.",
+  "scripts": {
+    "test": "npx hardhat test",
+    "network": "node scripts/_network.js",
+    "verify": "node scripts/_verify.js",
+    "task": "node scripts/_task.js"
+  },
+  "author": "Sebastiano Cataudo <seb@turinglabs.org>",
+  "license": "MIT",
+  "devDependencies": {
+    "@nomiclabs/hardhat-ethers": "^2.2.3",
+    "@nomiclabs/hardhat-waffle": "^2.0.6",
+    "chai": "^4.3.10",
+    "ethereum-waffle": "^4.0.10",
+    "ethers": "^5.5.4",
+    "hardhat": "^2.22.16",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.4.5"
+  },
+  "dependencies": {
+    "@nomiclabs/hardhat-etherscan": "^3.1.7",
+    "@openzeppelin/contracts": "^5.1.0",
+    "bip39": "^3.1.0",
+    "ethereumjs-wallet": "^1.0.2",
+    "minimist": "^1.2.8"
+  }
+}
