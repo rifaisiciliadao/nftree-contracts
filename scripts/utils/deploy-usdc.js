@@ -13,14 +13,12 @@ async function main() {
 
   // Deploy
   nonce = await wallet.getTransactionCount()
-  const contract = await hre.ethers.getContractFactory(configs.contract_name);
-  let arguments = [configs.default_admin, configs.minter, configs.validator, configs.rifai_dao_beneficiary]
-  console.log("Arguments:", arguments)
-  const deployed = await contract.deploy(...arguments, { gasPrice: baseFeePerGasBoosted, nonce });
+  const contract = await hre.ethers.getContractFactory("USDC");
+  const deployed = await contract.deploy({ gasPrice: baseFeePerGasBoosted, nonce });
   console.log('Deploy transaction is: ' + deployed.deployTransaction.hash)
   await deployed.deployed();
   console.log("Contract deployed to:", deployed.address);
-  configs.contract_address = deployed.address
+  configs.usdc = deployed.address
 
   // Save to disk
   fs.writeFileSync(process.env.CONFIG, JSON.stringify(configs, null, 4))

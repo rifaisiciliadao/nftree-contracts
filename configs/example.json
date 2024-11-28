@@ -8,5 +8,7 @@
     "owner_address": "",
     "default_admin": "",
     "minter": "",
-    "validator": ""
+    "validator": "",
+    "usdc": "",
+    "rifai_dao_beneficiary": ""
 }

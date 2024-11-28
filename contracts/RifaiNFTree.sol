@@ -50,11 +50,13 @@ contract RifaiNFTree is ERC721, AccessControl, ReentrancyGuard {
     constructor(
         address defaultAdmin,
         address minter,
-        address validator
+        address validator,
+        address _rifaiDaoBeneficiary
     ) ERC721("RifaiNFTree", "RNT") {
         _grantRole(DEFAULT_ADMIN_ROLE, defaultAdmin);
         _grantRole(MINTER_ROLE, minter);
         _grantRole(VALIDATOR_ROLE, validator);
+        rifaiDaoBeneficiary = _rifaiDaoBeneficiary;
     }
 
     function _baseURI() internal view override returns (string memory) {
@@ -65,6 +67,12 @@ contract RifaiNFTree is ERC721, AccessControl, ReentrancyGuard {
         string memory baseURI
     ) public onlyRole(DEFAULT_ADMIN_ROLE) {
         _customBaseURI = baseURI;
+    }
+
+    function setRifaiDaoBeneficiary(
+        address _rifaiDaoBeneficiary
+    ) public onlyRole(DEFAULT_ADMIN_ROLE) {
+        rifaiDaoBeneficiary = _rifaiDaoBeneficiary;
     }
 
     function setPublicCampaign(
@@ -78,13 +86,6 @@ contract RifaiNFTree is ERC721, AccessControl, ReentrancyGuard {
         uint256 rifaiDaoFee,
         string memory campaignMetadata
     ) public onlyRole(DEFAULT_ADMIN_ROLE) {
-        // Check if the campaign has not started or has already ended
-        require(
-            plantingCampaigns[campaignId].startDate > block.timestamp &&
-                plantingCampaigns[campaignId].endDate < block.timestamp,
-            "Campaign already started or ended."
-        );
-        // Check if the rifai dao fee is less than a third of the contribute amount
         require(
             rifaiDaoFee < contributeAmount / 3,
             "Rifai DAO fee is too high."
