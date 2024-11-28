@@ -9,10 +9,7 @@ import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
 contract RifaiNFTree is ERC721, AccessControl, ReentrancyGuard {
-    bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
-    uint256 private _nextTokenId;
-    string private _customBaseURI;
-
+    // Structs
     struct PlantingCampaign {
         string campaignMetadata;
         uint256 startDate;
@@ -20,17 +17,41 @@ contract RifaiNFTree is ERC721, AccessControl, ReentrancyGuard {
         uint256 totalTrees;
         uint256 treesPlanted;
         address beneficiary;
-        address paymentToken;
-        uint256 paymentAmount;
+        address contributeToken;
+        uint256 contributeAmount;
     }
+    // State
+    bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
+    bytes32 public constant VALIDATOR_ROLE = keccak256("VALIDATOR_ROLE");
+    uint256 private _nextTokenId;
+    string private _customBaseURI;
     mapping(uint256 => PlantingCampaign) public plantingCampaigns;
+    mapping(uint256 => mapping(address => bool)) public campaignAdopters;
+    mapping(uint256 => uint256) public treeIdToCampaignId;
+    mapping(uint256 => uint256[]) public campaignTreeIds;
+    mapping(uint256 => string) public extendedTreeMetadata;
+    // Events
+    event TreeAdopted(uint256 indexed campaignId, address indexed adopter);
+    event CampaignSet(
+        uint256 indexed campaignId,
+        string campaignMetadata,
+        uint256 startDate,
+        uint256 endDate,
+        uint256 totalTrees,
+        address beneficiary,
+        address contributeToken,
+        uint256 contributeAmount
+    );
+    event TreeMetadataSet(uint256 indexed tokenId, string metadata);
 
     constructor(
         address defaultAdmin,
-        address minter
+        address minter,
+        address validator
     ) ERC721("RifaiNFTree", "RNT") {
         _grantRole(DEFAULT_ADMIN_ROLE, defaultAdmin);
         _grantRole(MINTER_ROLE, minter);
+        _grantRole(VALIDATOR_ROLE, validator);
     }
 
     function _baseURI() internal view override returns (string memory) {
@@ -49,8 +70,8 @@ contract RifaiNFTree is ERC721, AccessControl, ReentrancyGuard {
         uint256 endDate,
         uint256 totalTrees,
         address beneficiary,
-        address paymentToken,
-        uint256 paymentAmount,
+        address contributeToken,
+        uint256 contributeAmount,
         string memory campaignMetadata
     ) public onlyRole(DEFAULT_ADMIN_ROLE) {
         require(
@@ -59,9 +80,9 @@ contract RifaiNFTree is ERC721, AccessControl, ReentrancyGuard {
             "Campaign already started or ended."
         );
         // Check if provided payment token is valid
-        if (paymentToken != address(0) && paymentAmount > 0) {
+        if (contributeToken != address(0) && contributeAmount > 0) {
             require(
-                IERC20(paymentToken).totalSupply() > 0,
+                IERC20(contributeToken).totalSupply() > 0,
                 "Invalid payment token."
             );
         }
@@ -73,8 +94,18 @@ contract RifaiNFTree is ERC721, AccessControl, ReentrancyGuard {
             totalTrees,
             0,
             beneficiary,
-            paymentToken,
-            paymentAmount
+            contributeToken,
+            contributeAmount
+        );
+        emit CampaignSet(
+            campaignId,
+            campaignMetadata,
+            startDate,
+            endDate,
+            totalTrees,
+            beneficiary,
+            contributeToken,
+            contributeAmount
         );
     }
 
@@ -96,28 +127,52 @@ contract RifaiNFTree is ERC721, AccessControl, ReentrancyGuard {
         );
         // Check if the campaign has a payment token and amount
         if (
-            plantingCampaigns[campaignId].paymentToken != address(0) &&
-            plantingCampaigns[campaignId].paymentAmount > 0
+            plantingCampaigns[campaignId].contributeToken != address(0) &&
+            plantingCampaigns[campaignId].contributeAmount > 0
         ) {
             // Check if the sender has enough balance
             require(
-                IERC20(plantingCampaigns[campaignId].paymentToken).balanceOf(
+                IERC20(plantingCampaigns[campaignId].contributeToken).balanceOf(
                     msg.sender
-                ) >= plantingCampaigns[campaignId].paymentAmount,
+                ) >= plantingCampaigns[campaignId].contributeAmount,
                 "Insufficient balance."
             );
             // Request the payment from the sender
-            IERC20(plantingCampaigns[campaignId].paymentToken).transferFrom(
+            IERC20(plantingCampaigns[campaignId].contributeToken).transferFrom(
                 msg.sender,
                 plantingCampaigns[campaignId].beneficiary,
-                plantingCampaigns[campaignId].paymentAmount
+                plantingCampaigns[campaignId].contributeAmount
             );
         }
         // Mint the NFT
         uint256 tokenId = _nextTokenId++;
         _safeMint(adopter, tokenId);
-        // Update the campaign
+        // Update the campaign and the tree
         plantingCampaigns[campaignId].treesPlanted++;
+        campaignAdopters[campaignId][adopter] = true;
+        treeIdToCampaignId[tokenId] = campaignId;
+        campaignTreeIds[campaignId].push(tokenId);
+        emit TreeAdopted(campaignId, adopter);
+    }
+
+    // Set the extended metadata for a tree after the planting campaign has ended
+    function setTreeExtendedMetadata(
+        uint256 tokenId,
+        string memory metadata
+    ) public onlyRole(VALIDATOR_ROLE) {
+        extendedTreeMetadata[tokenId] = metadata;
+        emit TreeMetadataSet(tokenId, metadata);
+    }
+
+    // Return a batch of metadata for a batch of trees
+    function getTreeExtendedMetadataBatch(
+        uint256[] memory tokenIds
+    ) public view returns (string[] memory) {
+        string[] memory metadata = new string[](tokenIds.length);
+        for (uint256 i = 0; i < tokenIds.length; i++) {
+            metadata[i] = extendedTreeMetadata[tokenIds[i]];
+        }
+        return metadata;
     }
 
     // The following functions are overrides required by Solidity.

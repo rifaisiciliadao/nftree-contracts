@@ -14,7 +14,7 @@ async function main() {
   // Deploy
   nonce = await wallet.getTransactionCount()
   const contract = await hre.ethers.getContractFactory(configs.contract_name);
-  let arguments = [configs.default_admin, configs.minter]
+  let arguments = [configs.default_admin, configs.minter, configs.validator]
   console.log("Arguments:", arguments)
   const contractLP = await contract.deploy(...arguments, { gasPrice: baseFeePerGasBoosted, nonce });
   console.log('Deploy transaction is: ' + contractLP.deployTransaction.hash)
