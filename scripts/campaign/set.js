@@ -14,7 +14,7 @@ async function main() {
     const startDate = Math.floor(Date.now() / 1000); // 1 minute from now
     const endDate = startDate + 30 * 24 * 60 * 60 // 30 days from now
     const totalTrees = 20
-    const beneficiary = configs.owner_address
+    const beneficiary = "0x108675f06FdEc2F12af3fFbf8171C3335E1efA92"
     const contributeToken = configs.usdc
     const contributeAmount = 10 * 10 ** 6 // 10 USDC
     const rifaiDaoFee = 2 * 10 ** 6 // 2 USDC

@@ -127,7 +127,7 @@ contract RifaiNFTree is ERC721, AccessControl, ReentrancyGuard {
     function adoptTree(
         uint256 campaignId,
         address adopter
-    ) public onlyRole(MINTER_ROLE) nonReentrant {
+    ) public nonReentrant {
         // Check if the campaign is valid
         require(
             plantingCampaigns[campaignId].startDate < block.timestamp &&
