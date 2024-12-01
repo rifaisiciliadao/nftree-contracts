@@ -16,20 +16,15 @@ async function run() {
             configs.network !== undefined &&
             configs.owner_mnemonic !== undefined
         ) {
-            let arguments = [
-                '"' + configs.positionmanager + '"',
-                '"' + configs.addy1 + '"',
-                '"' + configs.addy2 + '"',
-                '"' + configs.contract_address.axgt + '"',
-                '"' + configs.weth + '"',
-                '"' + configs.quoter + '"']
+            let arguments = ['"' + configs.default_admin.toString() + '"', '"' + configs.minter.toString() + '"', '"' + configs.validator.toString() + '"', '"' + configs.rifai_dao_beneficiary.toString() + '"']
+
             fs.writeFileSync('./artifacts/arguments.js', `module.exports = [` + arguments + `]`)
             child_process.execSync(
                 'ETHERSCAN="' + configs.etherscan_key + '" ' +
                 'PROVIDER="' + configs.provider + '" ' +
                 'NETWORK="' + configs.network + '" ' +
                 'npx hardhat verify --show-stack-traces --network ' + configs.network +
-                ' ' + configs.contract_address[argv._[1]] +
+                ' ' + configs.contract_address +
                 ' --constructor-args ./artifacts/arguments.js', { stdio: 'inherit' }
             )
             console.log('All done, exiting!')

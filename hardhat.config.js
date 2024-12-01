@@ -24,7 +24,7 @@ let hardhatConfigs = {
     optimism: {
       url: provider
     },
-    ropsten: {
+    arbitrum: {
       url: provider
     },
     mainnet: {
@@ -75,7 +75,8 @@ hardhatConfigs.etherscan = {
     linea_mainnet: process.env.ETHERSCAN,
     polygon_zkevm: process.env.ETHERSCAN,
     'base-mainnet': process.env.ETHERSCAN,
-    'base-sepolia': process.env.ETHERSCAN
+    'base-sepolia': process.env.ETHERSCAN,
+    arbitrumOne: process.env.ETHERSCAN
   },
   customChains: [
     {
