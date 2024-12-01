@@ -100,12 +100,16 @@ contract RifaiNFTree is ERC721, AccessControl, ReentrancyGuard {
             );
         }
         // Set the campaign
+        uint256 treesPlanted = 0;
+        if (campaignTreeIds[campaignId].length > 0) {
+            treesPlanted = campaignTreeIds[campaignId].length;
+        }
         plantingCampaigns[campaignId] = PlantingCampaign(
             campaignMetadata,
             startDate,
             endDate,
             totalTrees,
-            0,
+            treesPlanted,
             beneficiary,
             contributeToken,
             contributeAmount,
@@ -201,6 +205,13 @@ contract RifaiNFTree is ERC721, AccessControl, ReentrancyGuard {
             metadata[i] = extendedTreeMetadata[tokenIds[i]];
         }
         return metadata;
+    }
+
+    // Return the array of token ids for a campaign
+    function getCampaignTreeIds(
+        uint256 campaignId
+    ) public view returns (uint256[] memory) {
+        return campaignTreeIds[campaignId];
     }
 
     // The following functions are overrides required by Solidity.

@@ -22,7 +22,7 @@ async function main() {
         "name": "Maccia Festival 2024",
         "organizer": "CaratoDAO",
         "location": "Ragusa, Italia",
-        "description": "Il maccia festival è un progetto nato da CaratoDAO, una rete informale di associazioni ambientali nel ragusano, che ogni anno effettua attività di riforestazione e di educazione ambientale. Quest'anno metteremo a dimora un querceto e un'agroforesta.",
+        "description": "The Maccia Festival is a project created by CaratoDAO, an informal network of environmental associations in the Ragusa area, which carries out reforestation and environmental education activities every year. This year we will establish an oak grove and an agroforest. The planting event will be done in the Public Park 'Alessandro Licitra' in Ragusa on 22th of December 2024.",
         "image": "https://ipfs.io/ipfs/QmRNFBPs99RixtSjp4chzUcKBCMiYJkUS89ZqrPEBFhzdJ"
     })
     const tx = await contract.setPublicCampaign(
